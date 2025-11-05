@@ -24,6 +24,25 @@ This is a robust, scalable messaging web application built with Ruby on Rails. I
 
 Follow these steps to get the application running on your local machine.
 
+### A. Setting Up PostgreSQL
+
+This application requires a running PostgreSQL database.
+
+1.  **Install PostgreSQL**
+    If you don't have it, install it with Homebrew:
+    ```sh
+    brew install postgresql
+    ```
+
+2.  **Start the PostgreSQL Service**
+    The service needs to be running in the background.
+    ```sh
+    brew services start postgresql
+    ```
+    You can check its status with `brew services list`.
+
+### B. Setting Up the Application
+
 1.  **Clone the Repository**
     ```sh
     # (Replace with your repository URL once you push to GitHub)
@@ -63,18 +82,13 @@ Follow these steps to get the application running on your local machine.
 
 ## Running the Application
 
-1.  **Build CSS and JavaScript Assets**
+1.  **Start the Development Server**
+    The easiest way to run the application is to use the `bin/dev` command, which will automatically build the necessary assets and start the Rails server.
     ```sh
-    yarn build
-    yarn build:css
+    bin/dev
     ```
 
-2.  **Start the Rails Server**
-    ```sh
-    bin/rails server
-    ```
-
-3.  **Access the Application**
+2.  **Access the Application**
     Open your web browser and navigate to `http://localhost:3000`.
 
 You should now see the messaging application, populated with the initial data.
