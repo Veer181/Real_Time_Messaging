@@ -1,6 +1,6 @@
 <h1>New Message</h1>
 
-<%= form_with(model: @message, url: messages_path) do |form| %>
+<%= form_with(model: @message, url: messages_path, id: "new_message_form") do |form| %>
   <div class="field">
     <%= form.label :client_id, "User ID" %>
     <%= form.number_field :client_id %>

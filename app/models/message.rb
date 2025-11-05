@@ -1,5 +1,6 @@
 class Message < ApplicationRecord
   belongs_to :client
+  has_many :replies, dependent: :destroy
   after_create_commit { broadcast_message }
 
   private

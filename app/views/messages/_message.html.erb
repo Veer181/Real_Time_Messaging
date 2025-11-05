@@ -1,3 +1,15 @@
-<li id="message_<%= message.id %>" class="list-group-item <%= urgency_class(message) %>">
-  <%= link_to message.message_body, message_path(message) %>
-</li>
+<tr class="message-row <%= urgency_class(message) %>" data-href="<%= message_path(message) %>">
+  <td class="text-center">
+    <% if message.urgent == 3 %>
+      <i class="fa-solid fa-triangle-exclamation text-danger" title="High Urgency"></i>
+    <% else %>
+      <span class="urgency-dot" style="background-color: <%= urgency_color(message) %>;" title="<%= urgency_level(message) %> Urgency"></span>
+    <% end %>
+  </td>
+  <td><%= message.client.user_id %></td>
+  <td>
+    <strong><%= link_to message.message_body.truncate(50), message_path(message), class: "text-dark text-decoration-none" %></strong>
+    <div class="message-body-snippet text-muted"><%= message.message_body.truncate(90) %></div>
+  </td>
+  <td class="text-end text-muted"><%= time_ago_in_words(message.sent_at) %> ago</td>
+</tr>

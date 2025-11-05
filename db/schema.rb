@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_05_135218) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_05_180659) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,5 +45,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_05_135218) do
     t.index ["client_id"], name: "index_messages_on_client_id"
   end
 
+  create_table "replies", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.bigint "message_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id"], name: "index_replies_on_message_id"
+  end
+
   add_foreign_key "messages", "clients"
+  add_foreign_key "replies", "messages"
 end

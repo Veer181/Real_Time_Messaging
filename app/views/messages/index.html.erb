@@ -1,15 +1,43 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1>Messages</h1>
-  <%= link_to "New Message", new_message_path, class: "btn btn-primary" %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="mb-0"><i class="fa-solid fa-inbox"></i> Message Inbox</h1>
+  <%= link_to new_message_path, class: "btn btn-primary" do %>
+    <i class="fa-solid fa-plus"></i> New Message
+  <% end %>
 </div>
 
-<%= form_with(url: messages_path, method: :get, local: true, class: "form-inline mb-3") do %>
-  <div class="form-group">
-    <%= text_field_tag :search, params[:search], placeholder: "Search messages...", class: "form-control" %>
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <%= form_with(url: messages_path, method: :get, local: true, class: "row g-3 align-items-center") do %>
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <%= text_field_tag :search, params[:search], placeholder: "Search by keyword, user ID...", class: "form-control" %>
+        </div>
+      </div>
+      <div class="col-auto">
+        <%= submit_tag "Search", class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
   </div>
-  <%= submit_tag "Search", class: "btn btn-primary ml-2" %>
-<% end %>
+</div>
 
-<ul id="messages" class="list-group">
-  <%= render @messages %>
-</ul>
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <h5 class="mb-0">All Messages</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 5%;"></th>
+          <th scope="col">From</th>
+          <th scope="col">Message</th>
+          <th scope="col" class="text-end">Received</th>
+        </tr>
+      </thead>
+      <tbody id="messages">
+        <%= render @messages %>
+      </tbody>
+    </table>
+  </div>
+</div>

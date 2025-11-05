@@ -1,10 +1,10 @@
 class MessagesController < ApplicationController
   def index
-    @messages = if params[:search]
-      Message.where("message_body ILIKE ?", "%#{params[:search]}%")
+    if params[:search].present?
+      @messages = Message.where("message_body ILIKE ?", "%#{params[:search]}%").order(urgent: :desc, created_at: :desc)
     else
-      Message.all
-    end.order(urgent: :desc, sent_at: :desc)
+      @messages = Message.all.order(urgent: :desc, created_at: :desc)
+    end
   end
 
   def show
@@ -20,20 +20,14 @@ class MessagesController < ApplicationController
     @message = Message.new(message_params.merge(client: client))
 
     if @message.save
-      # Broadcast the new message
-      ActionCable.server.broadcast(
-        "message_channel",
-        { message_html: render_to_string(partial: "messages/message", locals: { message: @message }), message_id: @message.id }
-      )
-      
       respond_to do |format|
         format.html { redirect_to root_path, notice: 'Message was successfully created.' }
-        format.js   # We will have a create.js.erb to handle this
+        format.js # Renders create.js.erb
       end
     else
       respond_to do |format|
-        format.html { render :new }
-        format.js   { render :new } # Or handle errors with JS
+        format.html { render :new, status: :unprocessable_entity }
+        format.js   { render :new, status: :unprocessable_entity }
       end
     end
   end
@@ -46,10 +40,7 @@ class MessagesController < ApplicationController
                       params[:message][:response_body]
                     end
 
-    if response_body.present?
-      # For this example, we'll just update the original message body
-      # to simulate a response.
-      @message.update(message_body: "#{@message.message_body}\n\n--- AGENT RESPONSE ---\n#{response_body}")
+    if @message.update(response_body: response_body)
       redirect_to message_path(@message), notice: 'Response sent successfully.'
     else
       redirect_to message_path(@message), alert: 'Please select a canned response or write a custom one.'
