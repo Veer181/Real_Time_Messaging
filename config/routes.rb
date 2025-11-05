@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   resources :messages, only: [:index, :show, :new, :create] do
     resources :replies, only: [:create]
+    get :new_replies, on: :member
   end
   resources :canned_messages
 end

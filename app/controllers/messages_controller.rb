@@ -1,7 +1,10 @@
 class MessagesController < ApplicationController
   def index
     if params[:search].present?
-      @messages = Message.where("message_body ILIKE ?", "%#{params[:search]}%").order(urgent: :desc, created_at: :desc)
+      # Join with clients and search on both message_body and client's user_id (casted to text)
+      @messages = Message.joins(:client)
+                         .where("messages.message_body ILIKE :search OR CAST(clients.user_id AS TEXT) ILIKE :search", search: "%#{params[:search]}%")
+                         .order(urgent: :desc, created_at: :desc)
     else
       @messages = Message.all.order(urgent: :desc, created_at: :desc)
     end
@@ -9,6 +12,7 @@ class MessagesController < ApplicationController
 
   def show
     @message = Message.find(params[:id])
+    @message.update(read_at: Time.current) if @message.read_at.nil?
   end
 
   def new
@@ -20,6 +24,11 @@ class MessagesController < ApplicationController
     @message = Message.new(message_params.merge(client: client))
 
     if @message.save
+      # Broadcast the new message
+      ActionCable.server.broadcast('messages', {
+        message: render_to_string(partial: 'messages/message', locals: { message: @message })
+      })
+
       respond_to do |format|
         format.html { redirect_to root_path, notice: 'Message was successfully created.' }
         format.js # Renders create.js.erb
@@ -30,6 +39,14 @@ class MessagesController < ApplicationController
         format.js   { render :new, status: :unprocessable_entity }
       end
     end
+  end
+
+  def new_replies
+    @message = Message.find(params[:id])
+    last_reply_id = params[:last_reply_id].to_i
+    @new_replies = @message.replies.where("id > ?", last_reply_id).order(created_at: :asc)
+
+    render json: @new_replies
   end
 
   def update

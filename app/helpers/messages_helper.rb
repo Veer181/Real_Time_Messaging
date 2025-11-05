@@ -25,6 +25,24 @@ module MessagesHelper
     end
   end
 
+  def message_row_class(message)
+    urgency_class = case message.urgent
+                    when 3 then 'table-danger'
+                    when 2 then 'table-warning'
+                    else ''
+                    end
+    
+    return urgency_class if urgency_class.present?
+
+    if message.replies.any?
+      'table-success-light'
+    elsif message.read_at.present?
+      'table-light'
+    else
+      ''
+    end
+  end
+
   def urgency_level(message)
     case message.urgent
     when 3

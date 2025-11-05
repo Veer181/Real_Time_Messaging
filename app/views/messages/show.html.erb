@@ -24,14 +24,16 @@
           </div>
 
           <!-- Agent Responses (if any) -->
-          <% @message.replies.order(created_at: :asc).each do |reply| %>
-            <div class="d-flex justify-content-end">
-              <div class="chat-bubble agent">
-                <p class="mb-0"><%= reply.body %></p>
-                <small class="text-white-50 d-block text-end mt-2"><%= time_ago_in_words(reply.created_at) %> ago</small>
+          <div id="conversation-thread" data-message-id="<%= @message.id %>">
+            <% @message.replies.order(created_at: :asc).each do |reply| %>
+              <div class="d-flex justify-content-end" data-reply-id="<%= reply.id %>">
+                <div class="chat-bubble agent">
+                  <p class="mb-0"><%= reply.body %></p>
+                  <small class="text-white-50 d-block text-end mt-2"><%= time_ago_in_words(reply.created_at) %> ago</small>
+                </div>
               </div>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

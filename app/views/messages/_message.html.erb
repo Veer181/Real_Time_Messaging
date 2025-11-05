@@ -1,15 +1,25 @@
-<tr class="message-row <%= urgency_class(message) %>" data-href="<%= message_path(message) %>">
-  <td class="text-center">
+<tr class="message-row <%= message_row_class(message) %>" data-href="<%= message_path(message) %>">
+  <td class="text-center align-middle">
     <% if message.urgent == 3 %>
       <i class="fa-solid fa-triangle-exclamation text-danger" title="High Urgency"></i>
     <% else %>
       <span class="urgency-dot" style="background-color: <%= urgency_color(message) %>;" title="<%= urgency_level(message) %> Urgency"></span>
     <% end %>
   </td>
-  <td><%= message.client.user_id %></td>
-  <td>
+  <td class="align-middle"><%= message.id %></td>
+  <td class="align-middle"><%= message.client.user_id %></td>
+  <td class="align-middle">
     <strong><%= link_to message.message_body.truncate(50), message_path(message), class: "text-dark text-decoration-none" %></strong>
     <div class="message-body-snippet text-muted"><%= message.message_body.truncate(90) %></div>
   </td>
-  <td class="text-end text-muted"><%= time_ago_in_words(message.sent_at) %> ago</td>
+  <td class="text-center align-middle">
+    <% if message.replies.any? %>
+      <span class="badge bg-success" title="Replied by agent"><i class="fa-solid fa-check"></i> Replied</span>
+    <% elsif message.read_at.present? %>
+      <span class="badge bg-secondary">Read</span>
+    <% else %>
+      <span class="badge bg-primary">New</span>
+    <% end %>
+  </td>
+  <td class="text-end text-muted align-middle"><%= time_ago_in_words(message.sent_at) %> ago</td>
 </tr>
