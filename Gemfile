@@ -6,7 +6,7 @@ gem "rails", "~> 8.1.1"
 gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
-gem "bootstrap", "~> 4.5.2"
+gem "bootstrap", "~> 5.3.5"
 gem "jquery-rails"
 
 # Use the Puma web server [https://github.com/puma/puma]
