@@ -1,0 +1,16 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Canned Messages</h1>
+  <%= link_to 'New Canned Message', new_canned_message_path, class: "btn btn-primary" %>
+</div>
+
+<ul class="list-group">
+  <% @canned_messages.each do |canned_message| %>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <%= canned_message.title %>
+      <div>
+        <%= link_to 'Edit', edit_canned_message_path(canned_message), class: "btn btn-secondary btn-sm" %>
+        <%= link_to 'Destroy', canned_message_path(canned_message), method: :delete, data: { confirm: 'Are you sure?' }, class: "btn btn-danger btn-sm" %>
+      </div>
+    </li>
+  <% end %>
+</ul>

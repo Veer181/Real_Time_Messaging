@@ -1,0 +1,15 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Messages</h1>
+  <%= link_to "New Message", new_message_path, class: "btn btn-primary" %>
+</div>
+
+<%= form_with(url: messages_path, method: :get, local: true, class: "form-inline mb-3") do %>
+  <div class="form-group">
+    <%= text_field_tag :search, params[:search], placeholder: "Search messages...", class: "form-control" %>
+  </div>
+  <%= submit_tag "Search", class: "btn btn-primary ml-2" %>
+<% end %>
+
+<ul id="messages" class="list-group">
+  <%= render @messages %>
+</ul>

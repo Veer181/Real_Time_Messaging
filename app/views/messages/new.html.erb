@@ -1,0 +1,22 @@
+<h1>New Message</h1>
+
+<%= form_with(model: @message, url: messages_path) do |form| %>
+  <div class="field">
+    <%= form.label :client_id, "User ID" %>
+    <%= form.number_field :client_id %>
+  </div>
+
+  <div class="field">
+    <%= form.label :message_body %>
+    <%= form.text_area :message_body %>
+  </div>
+
+  <div class="field">
+    <%= form.label :sent_at %>
+    <%= form.datetime_select :sent_at %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

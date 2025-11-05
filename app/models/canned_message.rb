@@ -1,0 +1,2 @@
+class CannedMessage < ApplicationRecord
+end
