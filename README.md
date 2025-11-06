@@ -179,8 +179,6 @@ bin/rails test
 ```bash
 cd /path/to/Branch/Branch_Assignment
 bin/dev
-# or
-bin/rails server
 ```
 
 Then open http://localhost:3000/messages
