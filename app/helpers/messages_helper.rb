@@ -29,9 +29,10 @@ module MessagesHelper
     urgency_class = case message.urgent
                     when 3 then 'table-danger'
                     when 2 then 'table-warning'
+                    when 1 then 'table-info'
                     else ''
                     end
-    
+
     return urgency_class if urgency_class.present?
 
     if message.replies.any?

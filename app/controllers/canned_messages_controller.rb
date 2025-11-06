@@ -9,10 +9,10 @@ class CannedMessagesController < ApplicationController
     @canned_message = CannedMessage.new
   end
 
-  def create
+    def create
     @canned_message = CannedMessage.new(canned_message_params)
     if @canned_message.save
-      redirect_to canned_messages_path, notice: 'Canned message was successfully created.'
+      redirect_to canned_message_path(@canned_message), notice: 'Canned message was successfully created.'
     else
       render :new
     end
@@ -23,7 +23,7 @@ class CannedMessagesController < ApplicationController
 
   def update
     if @canned_message.update(canned_message_params)
-      redirect_to canned_messages_path, notice: 'Canned message was successfully updated.'
+      redirect_to canned_message_path(@canned_message), notice: 'Canned message was successfully updated.'
     else
       render :edit
     end

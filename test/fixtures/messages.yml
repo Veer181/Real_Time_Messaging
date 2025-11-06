@@ -3,9 +3,9 @@
 one:
   message_body: MyText
   sent_at: 2025-11-05 16:32:45
-  customer: one
+  client: one
 
 two:
   message_body: MyText
   sent_at: 2025-11-05 16:32:45
-  customer: two
+  client: two

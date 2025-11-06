@@ -1,33 +1,37 @@
 namespace :messages do
-  desc "Assign urgency scores to messages based on keywords"
+  desc "Assign urgency scores to messages using the Message model (runs model detection & callbacks)"
   task flag_urgent: :environment do
-    puts "Resetting all message urgency scores to 0..."
-    Message.update_all(urgent: 0)
+    puts "Running model-based urgency detection for all messages (this will run Message#detect_urgency and persist)."
 
-    urgency_levels = {
-      high: { score: 3, keywords: ["loan approval", "disbursed", "payment"] },
-      medium: { score: 2, keywords: ["urgent", "asap", "emergency", "rejected", "late"] },
-      low: { score: 1, keywords: ["update", "info", "how to"] }
-    }
-
-    # Process from lowest urgency to highest to ensure higher scores overwrite lower ones
-    [:low, :medium, :high].each do |level|
-      score = urgency_levels[level][:score]
-      keywords = urgency_levels[level][:keywords]
-      
-      puts "Processing urgency level: #{level} (score: #{score})"
-      
-      query = keywords.map { |k| "message_body ILIKE '%#{k}%'" }.join(' OR ')
-      
-      updated_count = Message.where(query).update_all(urgent: score)
-      
-      puts "-> Flagged #{updated_count} messages."
+    updated = { total: 0, changed: 0 }
+    Message.find_each.with_index do |m, idx|
+      begin
+        # run the model detection (it's private) and save if urgency changed
+        before = m.urgent
+        m.send(:detect_urgency)
+        if m.changed? || m.urgent != before
+          m.save!(validate: false)
+          updated[:changed] += 1
+        end
+        updated[:total] += 1
+      rescue => e
+        Rails.logger.debug "flag_urgent: error processing message #{m.id}: #{e.message}"
+      end
     end
 
-    puts "\nUrgency flagging complete."
-    high_count = Message.where(urgent: 3).count
-    medium_count = Message.where(urgent: 2).count
-    low_count = Message.where(urgent: 1).count
-    puts "Total flagged: #{high_count} high, #{medium_count} medium, #{low_count} low."
+    puts "Processed #{updated[:total]} messages, updated #{updated[:changed]} records."
+
+    counts = Message.group(:urgent).count
+    puts "Final urgency counts: #{counts.inspect}"
+
+    puts "\nSample messages by urgency:"
+    [3,2,1,0].each do |u|
+      puts "\n--- URGENT #{u} ---"
+      Message.where(urgent: u).limit(5).pluck(:id, :message_body).each do |id, body|
+        puts "#{id}: #{body}"
+      end
+    end
+
+    puts "\nModel-based urgency flagging complete."
   end
 end
