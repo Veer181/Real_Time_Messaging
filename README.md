@@ -1,53 +1,98 @@
-# Messaging App — Urgency Flagging (Developer README)
+# Branch — Quick Ubuntu Setup (Exact Commands)
 
-This README contains concise, industry-standard setup instructions for macOS, Ubuntu/WSL, and Windows (native + WSL). It covers installing dependencies, project bootstrap, running tests and the app, and the admin re-score task. ML training/runtime steps are intentionally omitted.
-
-Prerequisites (common)
-- Git
-- Ruby (match `.ruby-version`, e.g. 3.3.10)
-- Node.js (LTS)
-- Yarn or npm
-- SQLite3 (default dev/test) or Postgres/MySQL client libs if you change DB
-- C toolchain (build-essential / Xcode CLT / MSYS2)
-
-Quick project bootstrap (once repo cloned)
+IMPORTANT: before running tests or starting the server you MUST import the CSV and run the urgency re-score so the database contains the messages the app and tests expect:
 ```bash
-cd /path/to/BRANCH/messaging-app
-bundle install
-yarn install
-bin/rails db:create db:migrate db:seed
-bin/rails test
-bin/rails server
-# open http://localhost:3000/messages
+cd /path/to/Branch/Branch_Assignment
+bin/rails import:messages
+bin/rails messages:flag_urgent
 ```
 
-macOS (Homebrew + rbenv) — copy/paste
-```bash
-# Install system tools
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install rbenv ruby-build node yarn sqlite3
+Layout required
+- Create a top-level folder named `Branch` containing:
+  - `Branch_Assignment/` — the Rails app (this repo)
+  - `GeneralistRails_Project_MessageData.csv` — sample CSV
 
-# Install Ruby and set local version
+Example:
+```
+/path/to/Branch
+  ├─ Branch_Assignment/
+  └─ GeneralistRails_Project_MessageData.csv
+```
+
+Exact macOS and Ubuntu (or WSL) copy‑paste setup — run from a fresh machine
+
+macOS (Homebrew) — copy/paste
+```bash
+# Install Homebrew if missing
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install developer tools and runtime dependencies
+brew install rbenv ruby-build node yarn postgresql
+
+# Start Postgres
+brew services start postgresql
+
+# Install Ruby via rbenv
+echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+source ~/.zshrc
 rbenv install 3.3.10
 rbenv local 3.3.10
 gem install bundler
 
-# Project steps
-cd /path/to/BRANCH/messaging-app
+# Project setup (from Branch/Branch_Assignment)
+cd /path/to/Branch/Branch_Assignment
 bundle install
 yarn install
 bin/rails db:create db:migrate db:seed
+
+# Import CSV and compute urgency (required BEFORE tests/server)
+bin/rails import:messages
+bin/rails messages:flag_urgent
+
+# Run tests
 bin/rails test
+
+# For development with JS watcher:
+bin/dev
+# or run the rails server:
 bin/rails server
+# open http://localhost:3000/messages
 ```
 
-Ubuntu / WSL (recommended for Windows) — copy/paste
-```bash
-# Update & toolchain
-sudo apt update
-sudo apt install -y build-essential curl git libssl-dev libreadline-dev zlib1g-dev sqlite3 libsqlite3-dev
+Exact Ubuntu (or WSL) copy‑paste setup — run from a fresh machine
 
-# Install rbenv (or use system manager)
+1) Clone repo
+```bash
+git clone <repo-url> /path/to/Branch/Branch_Assignment
+# replace <repo-url> with the repository HTTPS or SSH URL
+```
+(Places the Rails project in `/path/to/Branch/Branch_Assignment`.)
+
+2) Install build tools and common libs
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential \
+  libssl-dev \
+  libreadline-dev \
+  zlib1g-dev \
+  libffi-dev \
+  libyaml-dev \
+  libgdbm-dev \
+  libncurses5-dev \
+  libdb-dev \
+  autoconf \
+  bison \
+  curl \
+  git \
+  sqlite3 \
+  libsqlite3-dev
+```
+(These provide compilers and headers needed to build Ruby and native gems.)
+
+3) Install rbenv and Ruby
+```bash
 git clone https://github.com/rbenv/rbenv.git ~/.rbenv
 cd ~/.rbenv && src/configure && make -C src
 echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
@@ -58,129 +103,88 @@ git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
 rbenv install 3.3.10
 rbenv local 3.3.10
 gem install bundler
+```
+(Installs Ruby 3.3.10 locally via rbenv and bundler to manage gems.)
 
-# Node & yarn
+4) Install Node and Yarn
+```bash
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt install -y nodejs
 npm install -g yarn
-
-# Project steps
-cd /path/to/BRANCH/messaging-app
-bundle install
-yarn install
-bin/rails db:create db:migrate db:seed
-bin/rails test
-bin/rails server
 ```
+(Node is required to build frontend JS assets; Yarn installs JS deps.)
 
-Windows native (PowerShell) — copy/paste notes
-- Recommended: use WSL2 and follow the Ubuntu/WSL instructions above for best parity.
-- If you prefer native Windows:
-  1. Install Ruby via RubyInstaller for Windows (choose matching version + MSYS2).
-     - https://rubyinstaller.org/ — install DevKit when prompted.
-  2. Open a MSYS2/MinGW shell (installed by RubyInstaller) and run:
-```powershell
-# In PowerShell or MSYS2 shell (adjust paths)
-ridk install          # finalize MSYS2 toolchain if using RubyInstaller
-gem install bundler
-choco install nodejs  # if using Chocolatey (optional)
-npm install -g yarn
-
-cd C:\path\to\BRANCH\messaging-app
-bundle install
-yarn install
-bin\rails db:create db:migrate db:seed
-bin\rails test
-bin\rails server
-```
-- Note: native Windows may need additional dev headers; WSL2 is simpler for development.
-
-Database notes
-- The app's Rails `config/database.yml` is configured for PostgreSQL by default. If you want to use PostgreSQL (recommended for parity with production), install and run a local Postgres server and ensure the `pg` gem is available. Alternatively, you can use sqlite3 locally (no server) by changing `config/database.yml` and the Gemfile.
-
-PostgreSQL (recommended) — quick install & start
-- macOS (Homebrew):
+5) Install project Ruby and JS dependencies
 ```bash
-brew install postgresql
-brew services start postgresql
-# create user/db if needed (adjust names)
-createuser -s $(whoami) || true
-createdb messaging_app_development || true
+cd /path/to/Branch/Branch_Assignment
+bundle install
+yarn install
 ```
+(Installs gems from `Gemfile` and JS packages from `package.json`.)
 
-- Ubuntu / WSL:
+6) Prepare database schemas & seeds (before starting server)
+```bash
+bin/rails db:create db:migrate db:seed
+```
+(Creates DB and runs migrations and seeds for initial data.)
+
+7) Install & start PostgreSQL (if you prefer postgres)
 ```bash
 sudo apt update
 sudo apt install -y postgresql postgresql-contrib libpq-dev
 sudo service postgresql start
-# create role and db (run as postgres user)
 sudo -u postgres createuser --superuser $(whoami) || true
-createdb messaging_app_development || true
+sudo -u postgres createdb -O $(whoami) messaging_app_development || true
 ```
+(Ensure Postgres server and client libs are installed. The createuser/createdb lines create a DB role and DB that Rails can use locally. On many Homebrew or packaged installs this step may be unnecessary, but it's safe on Ubuntu/WSL.)
 
-- Windows:
-- Recommended: use the official PostgreSQL installer (https://www.postgresql.org/download/windows/) or run Postgres inside WSL2.
-- After installing, ensure the Postgres service is running and create the DB/role as above (or use pgAdmin).
+Ensure GeneralistRails_Project_MessageData.csv is at /path/to/Branch/GeneralistRails_Project_MessageData.csv
 
-Configure Rails
-- `config/database.yml` is set to use PostgreSQL by default. You can either:
-  - Create a matching DB/role locally (see above) and run:
-    ```bash
-    bin/rails db:create db:migrate db:seed
-    ```
-  - Or provide a connection URL via environment variable:
-    ```bash
-    export DATABASE_URL="postgres://user:password@localhost/messaging_app_development"
-    bin/rails db:create db:migrate db:seed
-    ```
-
-sqlite3 (alternative for quick local dev)
-- If you prefer sqlite3 (no DB server), update your `Gemfile` to include `gem 'sqlite3'` for the development group and change `config/database.yml` to a sqlite3 config, then run migrations:
+8) Import sample CSV into the app (REQUIRED before tests/server)
 ```bash
-bundle install
-bin/rails db:create db:migrate db:seed
+cd /path/to/Branch/Branch_Assignment
+bin/rails import:messages
 ```
+(The import task expects the CSV one level above the Rails app — i.e. in `Branch`.)
 
-Troubleshooting DB setups
-- If `bin/rails db:create` fails, check the Postgres service is running and the DB user exists.
-- If using `pg` gem compile errors occur, install `libpq-dev` (Linux) or ensure `pg_config` is available on PATH (macOS Homebrew postgres provides it).
-- Use `DATABASE_URL` to avoid editing `database.yml` when testing alternate setups.
-
-Admin tasks
-- Re-score and persist urgency for all messages:
+9) Re-score persisted messages (compute & persist urgency) (REQUIRED)
 ```bash
+cd /path/to/Branch/Branch_Assignment
 bin/rails messages:flag_urgent
 ```
 
-- Import messages from CSV:
-  - Place the CSV file named `GeneralistRails_Project_MessageData.csv` one level above the `messaging-app` directory (i.e. `../GeneralistRails_Project_MessageData.csv` when running from `messaging-app`), or update `lib/tasks/import.rake` if you want a different path.
-  - Required CSV columns (headers): `User ID`, `Message Body`, `Timestamp (UTC)`
-  - Run the import task:
+10) Import CSV & re-score (explicit workflow)
 ```bash
+cd /path/to/Branch/Branch_Assignment
 bin/rails import:messages
+bin/rails messages:flag_urgent
 ```
-  - The rake task is idempotent and will create `Client` records as needed and `Message` records using `sent_at` parsed from `Timestamp (UTC)`.
 
-Note: the import task currently expects the file at `Rails.root.join('..', 'GeneralistRails_Project_MessageData.csv')`. If you prefer to keep the CSV elsewhere, edit `lib/tasks/import.rake` to point to a different path or pass a wrapper task that sets the path.
-Configuration pointers
-- Rule keywords/weights: `app/models/message.rb` → `URGENCY_KEYWORDS`.
-- Mapping thresholds: `Message#detect_urgency` in `app/models/message.rb`.
-- UI color mappings: `app/helpers/messages_helper.rb`, `app/views/messages/_message.html.erb`.
-- ML code present in `lib/urgent_classifier.rb` — operations for training/execution are intentionally not included here.
+11) Run tests
+```bash
+cd /path/to/Branch/Branch_Assignment
+bin/rails test
+```
 
-Files of interest
-- app/models/message.rb
-- lib/urgent_classifier.rb
-- lib/tasks/messages.rake
-- app/helpers/messages_helper.rb
-- app/views/messages/_message.html.erb
-- test/* (model and controller tests)
+12) Start the development server (use `bin/dev` if available for JS watchers)
+```bash
+cd /path/to/Branch/Branch_Assignment
+bin/dev
+# or
+bin/rails server
+```
 
-Troubleshooting
-- If tests fail, run `bin/rails test` and inspect failures.
-- If `messages:flag_urgent` prints unexpected counts, check the final counts printed by the task and the sample messages shown.
-- Ensure Ruby version matches `.ruby-version`. Use rbenv/asdf or your preferred Ruby manager.
+Then open http://localhost:3000/messages
 
-Next steps (optional)
-- Add admin UI or YAML for tuning keywords/weights.
-- Add an automated retraining pipeline and evaluation metrics.
+Short explanations (why these steps)
+- System build deps (step 2) let you compile Ruby and native gems.
+- rbenv + ruby-build (step 3) install the exact Ruby version used by the project.
+- Node & Yarn (step 4) compile frontend assets (app/javascript). Without Node, assets won't build.
+- db:create/db:migrate/db:seed (step 6) creates tables and initial data the app expects.
+- Postgres (step 7) is the recommended DB; the createuser/createdb commands are for local auth convenience on Ubuntu/WSL.
+- Import + flag tasks (steps 8–9) load CSV messages and compute urgency so UI and tests reflect real data.
+- `bin/dev` runs servers/watchers (JS + Rails) for development; `bin/rails server` only runs Rails.
+
+If you want, I will:
+- Add inline one-line explanations next to each command in the README for clarity.
+- Add a simple `scripts/start-dev.sh` you can run from `/path/to/Branch/Branch_Assignment`.
