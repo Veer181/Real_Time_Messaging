@@ -15,8 +15,13 @@
         </div>
       </div>
       <div class="col-auto">
-        <%= submit_tag "Search", class: "btn btn-outline-secondary" %>
-        <%= link_to "Clear", messages_path, class: "btn btn-outline-danger", id: "clear-search-btn", style: (params[:search].blank? ? 'display: none;' : '') %>
+        <%= select_tag :customer_type, options_for_select(Customer::CUSTOMER_TYPES.keys.map { |k| [k.to_s.humanize, k] }, params[:customer_type]), prompt: "Filter by Type", class: "form-select" %>
+      </div>
+      <div class="col-auto">
+        <%= submit_tag "Search", class: "btn btn-primary" %>
+      </div>
+      <div class="col-auto">
+        <%= link_to "Clear", messages_path, class: "btn btn-outline-danger", id: "clear-search-btn", style: (params[:search].blank? && params[:customer_type].blank? ? 'display: none;' : '') %>
       </div>
     <% end %>
   </div>
@@ -31,8 +36,8 @@
       <thead>
         <tr>
           <th scope="col" style="width: 5%;"></th>
-          <th scope="col">ID</th>
-          <th scope="col">From</th>
+          <th scope="col" class="reduced-padding-cell">Message ID</th>
+          <th scope="col" class="reduced-padding-cell">Customer ID</th>
           <th scope="col">Message</th>
           <th scope="col" class="text-center">Status</th>
           <th scope="col" class="text-end">Received</th>

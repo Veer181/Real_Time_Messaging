@@ -6,10 +6,10 @@ This is a robust, scalable messaging web application built with Ruby on Rails. I
 
 *   **Real-time Messaging:** New messages appear in the UI instantly without needing a page refresh, powered by Action Cable.
 *   **Agent-Focused UI:** A clean, modern interface built with Bootstrap that allows agents to view all messages, see message details, and respond.
-*   **Intelligent Urgency Scoring:** Messages are automatically assigned an urgency score (High, Medium, Low) based on keywords related to financial transactions, general urgency, and informational queries. The UI uses a color-coded system (Red for high, Orange for medium, Blue for low) to highlight messages, ensuring agents can prioritize the most critical issues at a glance.
-*   **Search Functionality:** Agents can search through all messages by keyword.
-*   **Canned Responses:** Agents can create, manage, and use pre-written responses to answer common questions quickly and consistently.
-*   **Customer Context:** Messages are linked to a customer (client) ID, providing context for interactions.
+*   **Intelligent Urgency Scoring:** Messages are automatically assigned an urgency score (High, Medium, Low) based on keywords. The UI uses a color-coded system to help agents prioritize.
+*   **Search & Filtering:** Agents can search messages by keyword or customer ID, and filter messages by customer type (New, Returning, VIP).
+*   **Customer Information:** When viewing a message, agents can see a dedicated panel with additional customer details, including their name, email, phone number, and type, providing valuable context for every interaction.
+*   **Canned Responses:** Agents can use pre-written responses to answer common questions quickly and consistently.
 *   **Idempotent Data Import:** A rake task is provided to import an initial dataset from a CSV file, which can be run multiple times without creating duplicate entries.
 
 ## Prerequisites: Setting Up Your Development Environment
@@ -81,6 +81,21 @@ b. **Install Yarn:**
 brew install yarn
 ```
 
+### 5. Install and Start PostgreSQL
+
+The application database runs on PostgreSQL.
+
+a. **Install PostgreSQL:**
+
+```sh
+brew install postgresql
+```
+
+b. **Start the PostgreSQL service:**
+
+```sh
+brew services start postgresql
+```
 </details>
 
 <details>
@@ -118,42 +133,7 @@ Select option `3` for MSYS2 and MINGW development toolchain, then press Enter.
 gem install bundler
 ```
 
-</details>
-
-## Setup and Installation
-
-With the prerequisites installed, you can now set up the application.
-
-### 1. Clone the Repository
-
-```sh
-# (Replace with your repository URL once you push to GitHub)
-git clone <your-repository-url>
-cd messaging-app
-```
-
-### 2. Install and Start PostgreSQL
-
-The application database runs on PostgreSQL.
-
-<details>
-<summary><strong>macOS PostgreSQL Setup</strong></summary>
-
-a. **Install PostgreSQL (if not done in prerequisites):**
-
-```sh
-brew install postgresql
-```
-
-b. **Start the PostgreSQL service:**
-
-```sh
-brew services start postgresql
-```
-</details>
-
-<details>
-<summary><strong>Windows PostgreSQL Setup</strong></summary>
+### 5. Setup and Start PostgreSQL
 
 a. **Initialize the Database Cluster (First time only):**
 Open PowerShell as an Administrator and run:
@@ -172,24 +152,59 @@ net start postgresql-x64-16
 *(Note: The service name might differ based on your installed version)*
 </details>
 
-### 3. Install Application Dependencies
+## Application Setup and Installation
+
+With the prerequisites installed, you can now set up the application.
+
+### 1. Clone the Repository
+
+```sh
+# (Replace with your repository URL once you push to GitHub)
+git clone <your-repository-url>
+cd messaging-app
+```
+
+### 2. Install Application Dependencies
+
+This command installs all the Ruby gems and JavaScript packages required by the application.
 
 ```sh
 bundle install
 yarn install
 ```
 
-### 4. Set Up the Database
+### 3. Set Up and Seed the Database
+
+These commands will create the database, apply the schema, and populate it with initial data.
+
+a. **Create and Migrate the Database:**
 
 ```sh
 bin/rails db:create
 bin/rails db:migrate
 ```
 
-### 5. Import and Process Data
+b. **Place the CSV File:**
+Before running the import, ensure that the `GeneralistRails_Project_MessageData.csv` file is located in the root directory of the project, one level above the `messaging-app` directory.
+
+c. **Import Initial Messages:**
+This task imports the initial set of messages and clients from the provided CSV file.
 
 ```sh
 bin/rails import:messages
+```
+
+d. **Seed Customer Data:**
+This task creates customer profiles for the imported clients and assigns them a random customer type (New, Returning, or VIP) to demonstrate the filtering feature.
+
+```sh
+bin/rails db:seed
+```
+
+e. **Process Message Urgency:**
+This task analyzes the imported messages and assigns an urgency score to each one.
+
+```sh
 bin/rails messages:flag_urgent
 ```
 
@@ -204,4 +219,4 @@ bin/rails messages:flag_urgent
 2.  **Access the Application**
     Open your web browser and navigate to `http://localhost:3000`.
 
-You should now see the messaging application, populated with the initial data.
+You should now see the messaging application, populated with the initial data and ready to use.

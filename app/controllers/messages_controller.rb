@@ -1,17 +1,23 @@
 class MessagesController < ApplicationController
   def index
+    @messages = Message.all.order(urgent: :desc, created_at: :desc)
+
     if params[:search].present?
-      # Join with clients and search on both message_body and client's user_id (casted to text)
-      @messages = Message.joins(:client)
-                         .where("messages.message_body ILIKE :search OR CAST(clients.user_id AS TEXT) ILIKE :search", search: "%#{params[:search]}%")
-                         .order(urgent: :desc, created_at: :desc)
-    else
-      @messages = Message.all.order(urgent: :desc, created_at: :desc)
+      @messages = @messages.joins(client: :customer)
+                           .where("messages.message_body ILIKE :search OR CAST(clients.user_id AS TEXT) ILIKE :search", search: "%#{params[:search]}%")
+    end
+
+    if params[:customer_type].present?
+      type_value = Customer::CUSTOMER_TYPES[params[:customer_type].to_sym]
+      if type_value.present?
+        @messages = @messages.joins(client: :customer).where(customers: { customer_type: type_value })
+      end
     end
   end
 
   def show
     @message = Message.find(params[:id])
+    @customer = Customer.find_or_create_by(user_id: @message.client.user_id)
     @message.update(read_at: Time.current) if @message.read_at.nil?
   end
 
