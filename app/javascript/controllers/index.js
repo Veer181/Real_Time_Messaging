@@ -1,9 +1,6 @@
-// app/javascript/controllers/index.js
+ // app/javascript/controllers/index.js
 import { application } from "./application"
-import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers"
+import HelloController from "./hello_controller"
 
-// Eagerly load all controllers defined in controllers folder
-const context = require.context("controllers", true, /_controller\.js$/)
-application.load(definitionsFromContext(context))
-
-
+// Eagerly load controllers (manually registered)
+application.register("hello", HelloController)

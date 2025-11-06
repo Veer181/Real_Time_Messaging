@@ -1,19 +1,27 @@
 class MessagesController < ApplicationController
-  def index
-    @messages = Message.all.order(urgent: :desc, created_at: :desc)
+def index
+  @messages = Message.all.order(urgent: :desc, created_at: :desc)
 
-    if params[:search].present?
-      @messages = @messages.joins(client: :customer)
-                           .where("messages.message_body ILIKE :search OR CAST(clients.user_id AS TEXT) ILIKE :search", search: "%#{params[:search]}%")
-    end
+  if params[:search].present?
+    @messages = @messages.joins(client: :customer)
+                         .where("messages.message_body ILIKE :search OR CAST(clients.user_id AS TEXT) ILIKE :search", search: "%#{params[:search]}%")
+  end
 
-    if params[:customer_type].present?
-      type_value = Customer::CUSTOMER_TYPES[params[:customer_type].to_sym]
-      if type_value.present?
-        @messages = @messages.joins(client: :customer).where(customers: { customer_type: type_value })
-      end
+  if params[:customer_type].present?
+    type_value = Customer::CUSTOMER_TYPES[params[:customer_type].to_sym]
+    if type_value.present?
+      @messages = @messages.joins(client: :customer).where(customers: { customer_type: type_value })
     end
   end
+
+  if request.xhr?
+    render partial: "messages/message", collection: @messages, as: :message
+  else
+    respond_to do |format|
+      format.html
+    end
+  end
+end
 
   def show
     @message = Message.find(params[:id])
@@ -30,9 +38,10 @@ class MessagesController < ApplicationController
     @message = Message.new(message_params.merge(client: client))
 
     if @message.save
-      # Broadcast the new message
+      # Broadcast the updated message list
+      messages_html = render_to_string(partial: 'messages/message', collection: Message.all.order(urgent: :desc, created_at: :desc), as: :message)
       ActionCable.server.broadcast('messages', {
-        message: render_to_string(partial: 'messages/message', locals: { message: @message })
+        message: messages_html
       })
 
       respond_to do |format|

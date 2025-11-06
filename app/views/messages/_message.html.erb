@@ -1,4 +1,4 @@
-<tr class="message-row <%= message_row_class(message) %>" data-href="<%= message_path(message) %>">
+<tr class="message-row <%= message_row_class(message) %>" data-href="<%= message_path(message) %>" role="link" tabindex="0">
   <td class="text-center align-middle">
     <% if message.urgent == 3 %>
       <i class="fa-solid fa-triangle-exclamation text-danger" title="High Urgency"></i>
@@ -6,9 +6,9 @@
       <span class="urgency-dot" style="background-color: <%= urgency_color(message) %>;" title="<%= urgency_level(message) %> Urgency"></span>
     <% end %>
   </td>
-  <td class="align-middle reduced-padding-cell"><%= message.id %></td>
-  <td class="align-middle reduced-padding-cell"><%= message.client.user_id %></td>
-  <td class="align-middle">
+  <td class="text-center align-middle reduced-padding-cell"><%= message.id %></td>
+  <td class="text-center align-middle reduced-padding-cell"><%= message.client.user_id %></td>
+  <td class="text-center align-middle">
     <strong><%= link_to message.message_body.truncate(50), message_path(message), class: "text-dark text-decoration-none" %></strong>
     <div class="message-body-snippet text-muted"><%= message.message_body.truncate(90) %></div>
   </td>

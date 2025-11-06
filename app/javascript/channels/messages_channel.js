@@ -14,7 +14,7 @@ consumer.subscriptions.create("MessagesChannel", {
     // Called when there's incoming data on the websocket for this channel
     const messagesContainer = document.getElementById("messages");
     if (messagesContainer) {
-      messagesContainer.insertAdjacentHTML('afterbegin', data.message);
+      messagesContainer.innerHTML = data.message;
     }
   }
 });

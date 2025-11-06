@@ -1,3 +1,18 @@
 .reduced-padding-cell {
   padding-left: 0.5rem !important;
 }
+
+/* Tighter left padding for table header labels */
+.table thead th.reduced-padding-cell {
+  padding-left: 0 !important;
+  white-space: nowrap;
+}
+
+/* Center the header text and numbers for ID columns */
+.table th.reduced-padding-cell,
+.table td.reduced-padding-cell {
+  width: 90px;
+  text-align: center;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}

@@ -1,222 +1,150 @@
 # Branch Messaging Web Application
 
-This is a robust, scalable messaging web application built with Ruby on Rails. It's designed to handle high-volume customer service inquiries, allowing multiple agents to respond to customer messages efficiently.
+A Rails-based internal messaging tool for agents to view, search, filter, and reply to customer messages with real-time updates via polling.
+
+## Prerequisites
+
+- **Ruby** (>= 3.3.0): [Install Ruby](https://www.ruby-lang.org/en/documentation/installation/)
+- **Rails** (>= 8.1.1): Install via `gem install rails`
+- **Node.js** (>= 16): [Install Node.js](https://nodejs.org/)
+- **Yarn**: [Install Yarn](https://classic.yarnpkg.com/en/docs/install/)
+- **PostgreSQL**: [Install PostgreSQL](https://www.postgresql.org/download/)
+
+## Setup Instructions
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Veer181/Graph-Drawing.git
+   cd Graph-Drawing/messaging-app
+   ```
+
+2. **Install dependencies**
+   ```bash
+   bundle install
+   yarn install
+   ```
+
+3. **Configure the database**
+   - Update `config/database.yml` with your local PostgreSQL credentials if needed.
+   - Create and migrate the database:
+     ```bash
+     bin/rails db:create
+     bin/rails db:migrate
+     ```
+
+4. **Import sample data**
+   - Place `GeneralistRails_Project_MessageData.csv` at the repository root (one level above `messaging-app`).
+   - Run:
+     ```bash
+     bin/rails import:messages
+     bin/rails db:seed
+     bin/rails messages:flag_urgent
+     ```
+
+5. **Run the application**
+   ```bash
+   bin/dev
+   ```
+   - Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Features
 
-*   **Real-time Messaging:** New messages appear in the UI instantly without needing a page refresh, powered by Action Cable.
-*   **Agent-Focused UI:** A clean, modern interface built with Bootstrap that allows agents to view all messages, see message details, and respond.
-*   **Intelligent Urgency Scoring:** Messages are automatically assigned an urgency score (High, Medium, Low) based on keywords. The UI uses a color-coded system to help agents prioritize.
-*   **Search & Filtering:** Agents can search messages by keyword or customer ID, and filter messages by customer type (New, Returning, VIP).
-*   **Customer Information:** When viewing a message, agents can see a dedicated panel with additional customer details, including their name, email, phone number, and type, providing valuable context for every interaction.
-*   **Canned Responses:** Agents can use pre-written responses to answer common questions quickly and consistently.
-*   **Idempotent Data Import:** A rake task is provided to import an initial dataset from a CSV file, which can be run multiple times without creating duplicate entries.
+- Real-time inbox updates via polling (AJAX, updates every 5 seconds)
+- Search by keyword or customer ID
+- Filter by customer type (New, Returning, VIP)
+- Urgency highlighting (High/Medium/Low)
+- Conversation view with agent replies and canned responses
+- Customer detail panel on the message show page
 
-## Prerequisites: Setting Up Your Development Environment
+## Real-time Messaging (Websockets)
 
-Before you can run the application, you need to set up your machine with the necessary tools. Please follow the instructions for your operating system.
+- The inbox uses Action Cable (websockets) for real-time updates.
+- New messages appear instantly in all open inbox tabs.
+- No polling required.
+- To test: Open the inbox in multiple browser tabs. When a new message is created, it will show up immediately.
 
-<details>
-<summary><strong>macOS Setup Instructions</strong></summary>
+### Action Cable Setup
 
-### 1. Install Homebrew
+- Action Cable is enabled by default in Rails.
+- For production or advanced local setups, you may need Redis:
+  - Install Redis: https://redis.io/download
+  - Start Redis server: `redis-server`
+  - Update `config/cable.yml` if needed.
 
-Homebrew is a package manager for macOS that simplifies installing software. If you don't have it, open your terminal and run:
+## Rake Tasks
 
-```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+- Import messages from CSV (idempotent):
+  ```bash
+  bin/rails import:messages
+  ```
+  - CSV path: `Rails.root.join("..", "GeneralistRails_Project_MessageData.csv")`
+
+- Assign urgency based on keywords (idempotent):
+  ```bash
+  bin/rails messages:flag_urgent
+  ```
+
+## Troubleshooting
+
+- **PostgreSQL connection**: Update `config/database.yml` if your local credentials differ.
+- **CSV import**: Ensure the CSV file is at the repository root (one level above `messaging-app`).
+- **Assets not updating**: Run `bin/dev` and hard refresh. If still stale, restart the dev server.
+- **Ruby/Rails/Node/Yarn not found**: Install the required versions as listed above.
+
+## Tests
+
+Run all tests:
+```bash
+bin/rails test
 ```
 
-### 2. Install Git
+## Important Code
 
-The project is managed with Git. Install it with Homebrew:
+- **Polling JS** (`app/javascript/application.js`):
+  ```javascript
+  function pollMessages() {
+    const params = new URLSearchParams(window.location.search);
+    fetch(`/messages?${params.toString()}`, {
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const newMessages = doc.querySelector("#messages");
+        if (newMessages) {
+          document.querySelector("#messages").innerHTML = newMessages.innerHTML;
+        }
+      })
+      .catch(() => {});
+  }
+  setInterval(pollMessages, 5000);
+  ```
 
-```sh
-brew install git
-```
+- **Controller AJAX Response** (`app/controllers/messages_controller.rb`):
+  ```ruby
+  respond_to do |format|
+    format.html
+    format.js   { render partial: "messages/message", collection: @messages, as: :message }
+  end
+  ```
 
-### 3. Install Ruby
+- **Inbox Table** (`app/views/messages/index.html.erb`):
+  ```erb
+  <tbody id="messages">
+    <%= render @messages %>
+  </tbody>
+  ```
 
-This project uses Ruby. We recommend using a version manager like `rbenv` to avoid conflicts with the system Ruby.
+- **Message Row Partial** (`app/views/messages/_message.html.erb`):
+  ```erb
+  <tr class="message-row <%= message_row_class(message) %>" data-href="<%= message_path(message) %>" role="link" tabindex="0">
+    <!-- ... -->
+  </tr>
+  ```
 
-a. **Install rbenv:**
+## UI Interactivity
 
-```sh
-brew install rbenv ruby-build
-```
-
-b. **Set up rbenv in your shell:**
-
-```sh
-echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.zshrc
-source ~/.zshrc
-```
-
-c. **Install the correct Ruby version:**
-
-```sh
-rbenv install 3.3.0
-rbenv global 3.3.0
-```
-
-d. **Install the Bundler gem:**
-
-```sh
-gem install bundler
-```
-
-### 4. Install Node.js and Yarn
-
-The application uses Node.js and Yarn to manage JavaScript packages.
-
-a. **Install Node.js:**
-
-```sh
-brew install node
-```
-
-b. **Install Yarn:**
-
-```sh
-brew install yarn
-```
-
-### 5. Install and Start PostgreSQL
-
-The application database runs on PostgreSQL.
-
-a. **Install PostgreSQL:**
-
-```sh
-brew install postgresql
-```
-
-b. **Start the PostgreSQL service:**
-
-```sh
-brew services start postgresql
-```
-</details>
-
-<details>
-<summary><strong>Windows Setup Instructions</strong></summary>
-
-### 1. Install Chocolatey
-
-Chocolatey is a package manager for Windows. If you don't have it, open PowerShell as an **Administrator** and run:
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-```
-After installation, close and reopen your PowerShell terminal.
-
-### 2. Install Git, Ruby, Node.js, Yarn, and PostgreSQL
-
-Use Chocolatey to install all the required tools in one command. Open PowerShell as an **Administrator**:
-
-```powershell
-choco install git ruby nodejs yarn postgresql -y
-```
-
-### 3. Configure Ruby
-
-After the installation, you may need to run the Ruby Installer's `ridk install` to set up the MSYS2 toolchain. Open a new terminal and run:
-
-```powershell
-ridk install
-```
-Select option `3` for MSYS2 and MINGW development toolchain, then press Enter.
-
-### 4. Install Bundler
-
-```powershell
-gem install bundler
-```
-
-### 5. Setup and Start PostgreSQL
-
-a. **Initialize the Database Cluster (First time only):**
-Open PowerShell as an Administrator and run:
-
-```powershell
-& "C:\Program Files\PostgreSQL\16\bin\initdb.exe" -D "C:\Program Files\PostgreSQL\16\data"
-```
-*(Note: Your version number in the path might differ from `16`)*
-
-b. **Start the PostgreSQL service:**
-You can start the service from the Services application or by running:
-
-```powershell
-net start postgresql-x64-16
-```
-*(Note: The service name might differ based on your installed version)*
-</details>
-
-## Application Setup and Installation
-
-With the prerequisites installed, you can now set up the application.
-
-### 1. Clone the Repository
-
-```sh
-# (Replace with your repository URL once you push to GitHub)
-git clone <your-repository-url>
-cd messaging-app
-```
-
-### 2. Install Application Dependencies
-
-This command installs all the Ruby gems and JavaScript packages required by the application.
-
-```sh
-bundle install
-yarn install
-```
-
-### 3. Set Up and Seed the Database
-
-These commands will create the database, apply the schema, and populate it with initial data.
-
-a. **Create and Migrate the Database:**
-
-```sh
-bin/rails db:create
-bin/rails db:migrate
-```
-
-b. **Place the CSV File:**
-Before running the import, ensure that the `GeneralistRails_Project_MessageData.csv` file is located in the root directory of the project, one level above the `messaging-app` directory.
-
-c. **Import Initial Messages:**
-This task imports the initial set of messages and clients from the provided CSV file.
-
-```sh
-bin/rails import:messages
-```
-
-d. **Seed Customer Data:**
-This task creates customer profiles for the imported clients and assigns them a random customer type (New, Returning, or VIP) to demonstrate the filtering feature.
-
-```sh
-bin/rails db:seed
-```
-
-e. **Process Message Urgency:**
-This task analyzes the imported messages and assigns an urgency score to each one.
-
-```sh
-bin/rails messages:flag_urgent
-```
-
-## Running the Application
-
-1.  **Start the Development Server**
-    The easiest way to run the application is to use the `bin/dev` command, which will automatically build the necessary assets and start the Rails server.
-    ```sh
-    bin/dev
-    ```
-
-2.  **Access the Application**
-    Open your web browser and navigate to `http://localhost:3000`.
-
-You should now see the messaging application, populated with the initial data and ready to use.
+- New messages appear automatically in the inbox.
+- Click any message row to view details and reply.
+- Conversation view supports agent replies and canned responses.
