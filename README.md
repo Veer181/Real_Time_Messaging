@@ -1,11 +1,7 @@
 # Branch — Quick Ubuntu Setup (Exact Commands)
 
 IMPORTANT: before running tests or starting the server you MUST import the CSV and run the urgency re-score so the database contains the messages the app and tests expect:
-```bash
-cd /path/to/Branch/Branch_Assignment
-bin/rails import:messages
-bin/rails messages:flag_urgent
-```
+
 
 Layout required
 - Create a top-level folder named `Branch` containing:
@@ -25,40 +21,51 @@ macOS (Homebrew) — copy/paste
 ```bash
 # Install Homebrew if missing
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
+```
+```bash
 # Install developer tools and runtime dependencies
 brew install rbenv ruby-build node yarn postgresql
-
+```
+```bash
 # Start Postgres
 brew services start postgresql
-
+```
+```bash
 # Install Ruby via rbenv
 echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc
 echo 'eval "$(rbenv init -)"' >> ~/.zshrc
 source ~/.zshrc
+```
+```bash
 rbenv install 3.3.10
+```
+```bash
 rbenv local 3.3.10
+```
+```bash
 gem install bundler
-
+```
+```bash
 # Project setup (from Branch/Branch_Assignment)
 cd /path/to/Branch/Branch_Assignment
 bundle install
 yarn install
 bin/rails db:create db:migrate db:seed
-
+```
+```bash
 # Import CSV and compute urgency (required BEFORE tests/server)
 bin/rails import:messages
 bin/rails messages:flag_urgent
-
+```
+```bash
 # Run tests
 bin/rails test
-
+```
+```bash
 # For development with JS watcher:
 bin/dev
-# or run the rails server:
-bin/rails server
-# open http://localhost:3000/messages
 ```
+Open http://localhost:3000/messages
 
 Exact Ubuntu (or WSL) copy‑paste setup — run from a fresh machine
 
@@ -102,7 +109,9 @@ git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
 
 rbenv install 3.3.10
 rbenv local 3.3.10
-gem install bundler
+```
+```bash
+sudo gem install bundler
 ```
 (Installs Ruby 3.3.10 locally via rbenv and bundler to manage gems.)
 
