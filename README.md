@@ -192,6 +192,50 @@ Short explanations (why these steps)
 - Import + flag tasks (steps 8–9) load CSV messages and compute urgency so UI and tests reflect real data.
 - `bin/dev` runs servers/watchers (JS + Rails) for development; `bin/rails server` only runs Rails.
 
-If you want, I will:
-- Add inline one-line explanations next to each command in the README for clarity.
-- Add a simple `scripts/start-dev.sh` you can run from `/path/to/Branch/Branch_Assignment`.
+
+
+
+Basic project explanation =
+- What this project is
+  - This is a simple messaging web application built with Ruby on Rails. It stores incoming customer messages, computes a short urgency score for each message, and surfaces high-urgency messages in the UI. The app also supports realtime updates so new or re-scored messages are pushed to open browsers.
+
+- Why Ruby on Rails
+  - Ruby is the programming language used for app logic.
+  - Rails is a web framework that provides structure (models, controllers, views), database migrations, tasks, testing helpers, and ActionCable for realtime features — all of which speed development for this kind of app.
+
+- Where messages are stored
+  - Logical store: PostgreSQL `messages` table (model: `Message`).
+  - Configured DB name (development): `messaging_app_development` (see `config/database.yml`).
+  - The message text is saved in the `message_body` column; urgency is saved in the `urgent` integer column.
+
+- How urgency works (short)
+  - `app/models/message.rb` computes urgency before saving via `before_validation :detect_urgency`.
+  - It uses a weighted keyword map (URGENCY_KEYWORDS), punctuation/temporal cues, amount detection, and an optional ML hook. The result is an integer 0..3 that the UI and queries use to order messages.
+
+- Typical developer workflow (summary)
+  1. Place repository under a top-level `Branch` folder with `Branch_Assignment/` and `GeneralistRails_Project_MessageData.csv` at that root.
+  2. Install dependencies (Ruby, rbenv, Node/Yarn, Postgres) — see the OS-specific sections above.
+  3. From `/path/to/Branch/Branch_Assignment` run:
+     - `bundle install` and `yarn install`
+     - `bin/rails db:create db:migrate db:seed`
+     - `bin/rails import:messages` (imports CSV into development DB)
+     - `bin/rails messages:flag_urgent` (computes and persists urgency)
+     - `bin/dev` (or `bin/rails server`) to start app
+  4. Use the Rails console for inspection and ad-hoc operations:
+     - `bin/rails console` then `Message.find_by(id: 101)`, `Message.where(urgent: 3)`, `m = Message.create(...)`, etc.
+
+- Notes about the import / tests
+  - This project expects you to run `import:messages` and `messages:flag_urgent` so the database contains the messages the app and tests rely on. See the top of this README for exact commands and order.
+
+
+
+- Quick pointers to crucial files
+  - `app/models/message.rb` — urgency detection and broadcast callbacks
+  - `app/controllers/messages_controller.rb` — message creation/ingestion
+  - `lib/tasks/import.rake` — CSV import
+  - `lib/tasks/messages.rake` — re-score (messages:flag_urgent)
+  - `app/views/messages/_message.html.erb` — partial used for broadcasts
+  - `app/javascript/channels/*` — ActionCable client subscriptions and DOM update logic
+  - `config/database.yml` & `db/schema.rb` — DB connection and table schema
+
+- If you want this added as a short "Project Overview" section at the top instead, say so and I will move it there (without deleting any existing lines).
