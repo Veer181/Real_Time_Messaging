@@ -8,6 +8,7 @@ This is a simple messaging web application built with Ruby on Rails. It stores i
 - **Realtime Updates:** Messages are updated in realtime using ActionCable, ensuring users always see the latest updates without refreshing the page.
 - **CSV Import and Scoring:** Allows importing messages from a CSV file and computes urgency for bulk data.
 - **Developer-Friendly Setup:** Includes detailed setup instructions for macOS and Ubuntu/WSL environments with production-ready configurations.
+- **Demo video for the same is in the repo**
 
 # Real_Time_Messaging — Quick Ubuntu Setup (Exact Commands)
 
