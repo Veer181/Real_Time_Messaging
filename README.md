@@ -1,3 +1,14 @@
+# Real_Time_Messaging — Overview
+
+## What this project is
+This is a simple messaging web application built with Ruby on Rails. It stores incoming customer messages, computes a short urgency score for each message, and surfaces high-urgency messages in the UI. The app also supports realtime updates so new or re-scored messages are pushed to open browsers.
+
+## Features
+- **Message Urgency Detection:** Automatically computes urgency scores for messages based on keywords, punctuation, and other cues.
+- **Realtime Updates:** Messages are updated in realtime using ActionCable, ensuring users always see the latest updates without refreshing the page.
+- **CSV Import and Scoring:** Allows importing messages from a CSV file and computes urgency for bulk data.
+- **Developer-Friendly Setup:** Includes detailed setup instructions for macOS and Ubuntu/WSL environments with production-ready configurations.
+
 # Real_Time_Messaging — Quick Ubuntu Setup (Exact Commands)
 
 IMPORTANT: before running tests or starting the server you MUST import the CSV and run the urgency re-score so the database contains the messages the app and tests expect:
